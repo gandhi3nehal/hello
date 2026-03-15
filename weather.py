@@ -16,7 +16,7 @@ message = client.messages.create(
             'required': ['location']
         }
     }],
-    messages=[{'role': 'user', 'content': "What's the weather in San Francisco?"}]
+    messages=[{'role': 'user', 'content': "What's the weather in Los Angeles?"}]
 )
 
 for block in message.content:
