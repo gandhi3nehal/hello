@@ -8,19 +8,30 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Setup Ollama
-      # Use an action to install Ollama
-      uses: ai-action/setup-ollama@v2
       with:
-        model: llama3 # Specify the model to use
+        fetch-depth: 0 # Important: allows the AI to see the full git diff
 
-    - name: Run Code Review with Ollama
-      # Use an action designed for code review
-      uses: ai-action/ollama-action@v2
-      id: model
-      with:
-        # Example command to run the model with instructions
-        model: llama3
-        command: "ollama run llama3 'Review the following code changes and suggest improvements.'"
-        # Additional inputs for file changes, etc.
+    - name: Install and Start Ollama
+      run: |
+        # 1. Install Ollama
+        curl -fsSL https://ollama.com/install.sh | sh
+        
+        # 2. Start Ollama in the background
+        ollama serve & 
+        
+        # 3. Wait for the server to wake up
+        sleep 5 
+        
+        # 4. Pre-download the model (llama3.2 is faster for CI)
+        ollama pull llama3.2
+
+    - name: Run Code Review
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Get the diff of the PR
+        git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
+        
+        # Feed the diff to Ollama
+        # We use a piped heredoc for a cleaner prompt
+        ollama run llama3.2 "Review this git diff and list top 3 bugs or improvements: $(cat pr_diff.txt)"
