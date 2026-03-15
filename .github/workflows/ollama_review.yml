@@ -39,5 +39,5 @@ jobs:
         
         # Feed the diff to Ollama
         # We use a piped heredoc for a cleaner prompt
-        RESPONSE=$(ollama run llama3.2 "Review this git diff and list top 3 bugs or improvements: $(cat pr_diff.txt)")
-        gh pr comment $PR_NUMBER --body "$RESPONSE"
+        ollama run llama3.2 "Review this git diff and list top 3 bugs or improvements: $(cat pr_diff.txt)" > comment.txt
+        gh pr comment $PR_NUMBER --body "$(cat comment.txt)"
