@@ -30,14 +30,11 @@ jobs:
         ollama pull llama3.2
 
     - name: Run Code Review
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
-        # Get the diff of the PR
-        git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
-        
-        # Feed the diff to Ollama
-        # We use a piped heredoc for a cleaner prompt
-        ollama run llama3.2 "Review this git diff and list top 3 bugs or improvements: $(cat pr_diff.txt)" > comment.txt
-        gh pr comment $PR_NUMBER --body "$(cat comment.txt)"
+          PROMPT='Code review the changes below:'
+          RESPONSE=$(ollama run codellama "$PROMPT\n$(gh pr diff $PR_NUMBER)")
+          gh pr comment $PR_NUMBER --body "$RESPONSE"
+      env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+
