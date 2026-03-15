@@ -1,0 +1,26 @@
+name: AI Code Review
+
+on: pull_request
+
+jobs:
+  code-review:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Ollama
+      # Use an action to install Ollama
+      uses: ai-action/setup-ollama@v2
+      with:
+        model: llama3 # Specify the model to use
+
+    - name: Run Code Review with Ollama
+      # Use an action designed for code review
+      uses: ai-action/ollama-action@v2
+      id: model
+      with:
+        # Example command to run the model with instructions
+        model: llama3
+        command: "ollama run llama3 'Review the following code changes and suggest improvements.'"
+        # Additional inputs for file changes, etc.
